@@ -15,27 +15,30 @@ st.write("Apni `.wav` audio file upload karein aur model batayega ke yeh **'no'*
 # ================================
 # 2. LOAD SAVED MODEL (Cached for speed)
 # ================================
+import keras
+
+# Keras 3 ke arguments parser ko override karna taake error bypass ho sake
+if hasattr(keras.layers, 'Dense'):
+    original_init = keras.layers.Dense.__init__
+    def patched_init(self, *args, **kwargs):
+        # Agar config mein quantization_config ho to usay chup-chaap mita do
+        kwargs.pop('quantization_config', None)
+        original_init(self, *args, **kwargs)
+    keras.layers.Dense.__init__ = patched_init
+
 @st.cache_resource
 def load_model():
-    # Aapka GitHub Release wala model link
     model_url = "https://github.com/Rana-affi/audio-classification-app/releases/download/v1.0/audio_model.h5" 
-    
-    # Model download karna
     model_path = tf.keras.utils.get_file("audio_model.h5", origin=model_url)
     
-    # Keras 3 ke 'pop from empty list' error ko khatam karne ke liye strict loading off ki hai
+    # Bina compile aur safe mode ke load karna
     return tf.keras.models.load_model(model_path, compile=False, safe_mode=False)
 
 try:
     model = load_model()
 except Exception as e:
-    # Agar phir bhi masla kare, to direct legacy format se load karne ki koshish karna
-    try:
-        import keras
-        model = keras.models.load_model(model_path, compile=False)
-    except:
-        st.error(f"Error loading model: {e}")
-        st.stop()
+    st.error(f"Error loading model: {e}")
+    st.stop()
 
 # ================================
 # 3. LABELS
