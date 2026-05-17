@@ -12,23 +12,19 @@ st.set_page_config(page_title="Audio Classifier", page_icon="🎤")
 st.title("🎤 Audio Classification App")
 st.write("Apni `.wav` audio file upload karein aur model batayega ke yeh **'no'**, **'stop'**, ya **'yes'** hai.")
 
-
-# ================================
-# 2. LOAD SAVED MODEL (Cached for speed)
-# ================================
 # ================================
 # 2. LOAD SAVED MODEL (Cached for speed)
 # ================================
 @st.cache_resource
 def load_model():
-    # Yahan neeche URL mein apna copy kiya hua link paste karein
-    model_url = "https://github.com/Rana-affi/audio-classification-app/releases/download/v1.0/audio_model.h5"
-
+    # Aapka GitHub Release wala model link
+    model_url = "https://github.com/Rana-affi/audio-classification-app/releases/download/v1.0/audio_model.h5" 
+    
     # Model download karna
     model_path = tf.keras.utils.get_file("audio_model.h5", origin=model_url)
-
-    return tf.keras.models.load_model(model_path)
-
+    
+    # Keras 3 ka configuration error bypass karne ke liye compile=False lagaya hai
+    return tf.keras.models.load_model(model_path, compile=False)
 
 try:
     model = load_model()
