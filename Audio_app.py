@@ -23,14 +23,19 @@ def load_model():
     # Model download karna
     model_path = tf.keras.utils.get_file("audio_model.h5", origin=model_url)
     
-    # Keras 3 ka configuration error bypass karne ke liye compile=False lagaya hai
-    return tf.keras.models.load_model(model_path, compile=False)
+    # Keras 3 ke 'pop from empty list' error ko khatam karne ke liye strict loading off ki hai
+    return tf.keras.models.load_model(model_path, compile=False, safe_mode=False)
 
 try:
     model = load_model()
 except Exception as e:
-    st.error(f"Error loading model: {e}")
-    st.stop()
+    # Agar phir bhi masla kare, to direct legacy format se load karne ki koshish karna
+    try:
+        import keras
+        model = keras.models.load_model(model_path, compile=False)
+    except:
+        st.error(f"Error loading model: {e}")
+        st.stop()
 
 # ================================
 # 3. LABELS
